@@ -1,0 +1,35 @@
+#version 330 core
+// Created by Ethan Watts (eawatts1@sheffield.ac.uk)
+// With reference to Joey's tutorials.
+
+out vec4 FragColor;
+in vec3 TexCoords;
+
+uniform samplerCube skybox;
+uniform sampler2D animatedTexture;
+
+uniform vec2 offset;
+
+void main()
+{
+    vec3 absTexCoords = abs(TexCoords);
+    vec2 texCoords2D;
+
+    // Determine the 2D texture coordinates based on the main axis
+    if (absTexCoords.x > absTexCoords.y && absTexCoords.x > absTexCoords.z) {
+        texCoords2D = vec2(TexCoords.z, TexCoords.y) * (TexCoords.x > 0.0 ? 1.0 : -1.0);
+
+    } else if (absTexCoords.y > absTexCoords.x && absTexCoords.y > absTexCoords.z) {
+        texCoords2D = vec2(TexCoords.x, TexCoords.z) * (TexCoords.y > 0.0 ? 1.0 : -1.0);
+
+    } else {
+        texCoords2D = vec2(TexCoords.x, TexCoords.y) * (TexCoords.z > 0.0 ? 1.0 : -1.0);
+    }
+
+    // Scale and shift the texture coordinates
+    texCoords2D = fract(texCoords2D * 0.5 + 0.5 + offset);
+
+    vec4 animatedColor = texture(animatedTexture, texCoords2D);
+    vec4 skyboxColor = texture(skybox, TexCoords);
+    FragColor = mix(skyboxColor, animatedColor, 0.5);
+}
